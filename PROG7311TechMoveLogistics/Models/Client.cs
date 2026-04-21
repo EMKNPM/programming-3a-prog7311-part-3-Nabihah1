@@ -25,5 +25,7 @@ namespace PROG7311TechMoveLogistics.Models
         //navigation property 
         // 1 clinet can have many contracts 
         public List<Contract> Contracts { get; set; } = new List<Contract>();
+  
+    
     }
 }
