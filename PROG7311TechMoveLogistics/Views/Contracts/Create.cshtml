@@ -1,52 +1,81 @@
-﻿@model PROG7311TechMoveLogistics.Models.Contract
+﻿@model PROG7311TechMoveLogistics.Models.ContractFormViewModel
 
 @{
     ViewData["Title"] = "Create";
 }
 
-<h1>Create</h1>
+<h2 class="mb-4">Add New Contract</h2>
 
-<h4>Contract</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="ContractStartDate" class="control-label"></label>
-                <input asp-for="ContractStartDate" class="form-control" />
-                <span asp-validation-for="ContractStartDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ContractEndDate" class="control-label"></label>
-                <input asp-for="ContractEndDate" class="form-control" />
-                <span asp-validation-for="ContractEndDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ContractStatus" class="control-label"></label>
-                <select asp-for="ContractStatus" class="form-control"></select>
-                <span asp-validation-for="ContractStatus" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ContractServiceLevel" class="control-label"></label>
-                <input asp-for="ContractServiceLevel" class="form-control" />
-                <span asp-validation-for="ContractServiceLevel" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ClientId" class="control-label"></label>
-                <select asp-for="ClientId" class ="form-control" asp-items="ViewBag.ClientId"></select>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+<div class="row justify-content-center">
+    <div class="col-md-6">
+
+        <div class="card shadow-sm p-4">
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger">
+                    @TempData["ErrorMessage"]
+                </div>
+            }
+
+
+
+            <!-- so we can upload documnets -->
+            <form asp-action="Create" method="post" enctype="multipart/form-data">
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <!-- Start Date -->
+                <div class="mb-3">
+                    <label asp-for="ContractStartDate" class="form-label fw-semibold"> Start Date</label>
+                    <input asp-for="ContractStartDate" class="form-control" type="date" />
+                    <span asp-validation-for="ContractStartDate" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="ContractEndDate" class="control-label fw-semibold"> End Date</label>
+                    <input asp-for="ContractEndDate" class="form-control" type="date" />
+                    <span asp-validation-for="ContractEndDate" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="ContractStatus" class="control-label fw-semibold">Current Status</label>
+                    <select asp-for="ContractStatus" class="form-control" asp-items="Html.GetEnumSelectList<ContractStatus>()"></select>
+                    <span asp-validation-for="ContractStatus" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="ContractServiceLevel" class="control-label fw-semibold">Service Level</label>
+                    <input asp-for="ContractServiceLevel" class="form-control" />
+                    <span asp-validation-for="ContractServiceLevel" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="ClientId" class="control-label fw-semibold">Client ID</label>
+                    <select asp-for="ClientId" class="form-control" asp-items="ViewBag.ClientId"></select>
+                </div>
+
+                <!-- FILE UPLOAD -->
+                <div class="form-group">
+                    <label asp-for="SignedDocument" class="control-label fw-semibold"> Contract Documents</label>
+                    <input asp-for="SignedDocument" type="file" class="form-control" accept="application/pdf" placdeholder="PDF format only" />
+                    <span asp-validation-for="SignedDocument" class="text-danger"></span>
+                </div>
+
+
+                <div class="d-flex justify-content-between mt-4">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Save Contract</button>
+                </div>
+
+            </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

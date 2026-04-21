@@ -4,56 +4,111 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
+<h1 class="mb-3">CONTRACTS</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.ContractStartDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ContractEndDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ContractStatus)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ContractServiceLevel)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Client)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.ContractStartDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ContractEndDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ContractStatus)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ContractServiceLevel)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Client.ClientName)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.ContractId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.ContractId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.ContractId">Delete</a>
-            </td>
-        </tr>
+
+@if (TempData["NotificationMessage"] != null)
+{
+    <div class="alert alert-success mb-3">
+        @TempData["NotificationMessage"]
+    </div>
 }
-    </tbody>
-</table>
+
+<a asp-action="Create" class="btn btn-primary mb-3">
+    + Add New Contract
+</a>
+
+<hr />
+<!-- filter search -->
+<!-- after user selects an option, it stays in the search bar i.e stores the values-->
+
+<h3> Filter by status or dates</h3>
+
+@{
+    var selectedStatus = Context.Request.Query["status"].ToString();
+    var selectedStartDate = Context.Request.Query["startDate"].ToString();
+    var selectedEndDate = Context.Request.Query["endDate"].ToString();
+}
+
+<form method="get" class="row g-2 mb-4">
+    <div class="col-md-3">
+        <select name="status" class="form-select">
+            <option value="" selected="@(string.IsNullOrEmpty(selectedStatus))">All Status</option>
+            <option value="Draft" selected="@(selectedStatus == "Draft")">Draft</option>
+            <option value="Active" selected="@(selectedStatus == "Active")">Active</option>
+            <option value="Expired" selected="@(selectedStatus == "Expired")">Expired</option>
+            <option value="OnHold" selected="@(selectedStatus == "OnHold")">On Hold</option>
+        </select>
+    </div>
+
+    <div class="col-md-3">
+        <input type="date" name="startDate" class="form-control" value="@selectedStartDate" />
+    </div>
+
+    <div class="col-md-3">
+        <input type="date" name="endDate" class="form-control" value="@selectedEndDate" />
+    </div>
+
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-dark w-100">Filter</button>
+    </div>
+    <div class="col-md-1">
+        <a asp-action="Index" class="btn btn-outline-secondary w-100">Clear</a>
+    </div>
+</form>
+
+<hr />
+
+<div class="row">
+    @foreach (var item in Model)
+    {
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm p-3 h-100">
+
+                <!-- Header -->
+                <div class="d-flex justify-content-between">
+                    <h5 class="fw-bold mb-1">
+                        Contract #@item.ContractId
+                    </h5>
+
+                    <span class="badge
+                        @(item.ContractStatus == ContractStatus.Active ? "bg-success" :
+                                                                          item.ContractStatus == ContractStatus.Expired ? "bg-danger" :
+                                                                          item.ContractStatus == ContractStatus.OnHold ? "bg-warning text-dark" :
+                                                                          "bg-secondary")">
+                        @item.ContractStatus
+                    </span>
+                </div>
+
+                <hr />
+
+                <!-- Dates -->
+                <p class="mb-1">
+                    <strong>Start:</strong> @item.ContractStartDate.ToShortDateString()
+                </p>
+
+                <p class="mb-2">
+                    <strong>End:</strong> @item.ContractEndDate.ToShortDateString()
+                </p>
+
+                <!-- Service Level -->
+                <p class="mb-2">
+                    <strong>Service:</strong> @item.ContractServiceLevel
+                </p>
+
+                <!-- Client -->
+                <p class="mb-2">
+                    <strong>Client:</strong> @item.Client?.ClientName
+                </p>
+
+                <!-- Actions -->
+                <div class="mt-auto">
+                    <a asp-action="Edit" asp-route-id="@item.ContractId" class="btn btn-sm btn-outline-primary">Edit</a>
+                    <a asp-action="Details" asp-route-id="@item.ContractId" class="btn btn-sm btn-outline-info">Details</a>
+                    <a asp-action="Delete" asp-route-id="@item.ContractId" class="btn btn-sm btn-outline-danger">Delete</a>
+                </div>
+
+            </div>
+        </div>
+    }
+</div>
