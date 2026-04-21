@@ -4,44 +4,77 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
+<h1>ALL CLIENTS</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.ClientName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ContactDetails)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Region)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.ClientName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ContactDetails)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Region)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.ClientId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.ClientId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.ClientId">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+
+<a asp-action="Create" class="btn btn-primary mb-3">
+    + Add New Client
+</a>
+
+<hr />
+
+<div class="row">
+    @foreach (var item in Model)
+    {
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm p-3 h-100">
+
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-start">
+                    <h5 class="fw-bold mb-1">
+                        @item.ClientName
+                    </h5>
+
+                    <span class="text-muted small">
+                        ID: @item.ClientId
+                    </span>
+                </div>
+
+                <hr />
+
+                <!-- Details -->
+                <p class="mb-1">
+                    <strong>Contact:</strong> @item.ContactDetails
+                </p>
+
+                <p class="mb-2">
+                    <strong>Region:</strong> @item.Region
+                </p>
+
+                <!-- Contract Status -->
+                @{
+                    var latestContract = item.Contracts?
+                        .OrderByDescending(c => c.ContractEndDate)
+                        .FirstOrDefault();
+                }
+
+                @if (latestContract != null)
+                {
+                    <span class="badge
+                        @(latestContract.ContractStatus == ContractStatus.Active ? "bg-success" :
+                                                                          latestContract.ContractStatus == ContractStatus.Expired ? "bg-danger" :
+                                                                          latestContract.ContractStatus == ContractStatus.OnHold ? "bg-warning text-dark" :
+                                                                          // latestContract.ContractStatus == ContractStatus.Draft ? "bg-":
+                                                                          "bg-secondary")">
+                        @latestContract.ContractStatus
+                    </span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">No Contracts</span>
+                }
+
+                <!-- Actions -->
+                <div class="mt-3">
+                    <a asp-action="Edit" asp-route-id="@item.ClientId" class="btn btn-sm btn-outline-primary">Edit</a>
+                    <a asp-action="Details" asp-route-id="@item.ClientId" class="btn btn-sm btn-outline-info">Details</a>
+                    <a asp-action="Delete" asp-route-id="@item.ClientId" class="btn btn-sm btn-outline-danger">Delete</a>
+                </div>
+
+            </div>
+        </div>
+    }
+
+           
+    
+</div>

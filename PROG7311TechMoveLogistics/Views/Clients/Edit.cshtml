@@ -4,41 +4,56 @@
     ViewData["Title"] = "Edit";
 }
 
-<h1>Edit</h1>
+<h2 class="mb-4">Edit Client Details</h2>
 
-<h4>Client</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="ClientId" />
-            <div class="form-group">
-                <label asp-for="ClientName" class="control-label"></label>
-                <input asp-for="ClientName" class="form-control" />
-                <span asp-validation-for="ClientName" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ContactDetails" class="control-label"></label>
-                <input asp-for="ContactDetails" class="form-control" />
-                <span asp-validation-for="ContactDetails" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Region" class="control-label"></label>
-                <input asp-for="Region" class="form-control" />
-                <span asp-validation-for="Region" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+<div class="row justify-content-center">
+    <div class="col-md-6">
+
+        <div class="card shadow-sm p-4">
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger">
+                    @TempData["ErrorMessage"]
+                </div>
+            }
+
+            <form asp-action="Edit">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="ClientId" />
+
+                <div class="form-group">
+                    <label asp-for="ClientName" class="control-label fw-semibold"> Name</label>
+                    <input asp-for="ClientName" class="form-control" />
+                    <span asp-validation-for="ClientName" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="ContactDetails" class="control-label fw-semibold">Contact Details</label>
+                    <input asp-for="ContactDetails" class="form-control" />
+                    <span asp-validation-for="ContactDetails" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Region" class="control-label fw-semibold">Region</label>
+                    <input asp-for="Region" class="form-control" />
+                    <span asp-validation-for="Region" class="text-danger"></span>
+                </div>
+
+            
+                <!-- Buttons -->
+                <div class="d-flex justify-content-between mt-4">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+
+            </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
