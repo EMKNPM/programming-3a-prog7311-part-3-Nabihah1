@@ -1,29 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PROG7311TechMoveLogistics.Data;
 using PROG7311TechMoveLogistics.Models;
+using PROG7311TechMoveLogistics.Services;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
 
 namespace PROG7311TechMoveLogistics.Controllers
 {
     public class ContractsController : Controller
     {
+        private readonly IContractService _contractService;
         private readonly DataContext _context;
 
-        public ContractsController(DataContext context)
+        public ContractsController(IContractService contractService, DataContext context)
         {
+            _contractService = contractService;
             _context = context;
         }
 
         // GET: Contracts
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string status, DateTime? startDate, DateTime? endDate)
         {
-            var dataContext = _context.Contracts.Include(c => c.Client);
-            return View(await dataContext.ToListAsync());
+
+            var contracts = await _contractService.GetAllContractsAsync(status, startDate, endDate);
+            return View(contracts);
         }
 
         // GET: Contracts/Details/5
@@ -34,13 +39,7 @@ namespace PROG7311TechMoveLogistics.Controllers
                 return NotFound();
             }
 
-            var contract = await _context.Contracts
-                .Include(c => c.Client)
-                .FirstOrDefaultAsync(m => m.ContractId == id);
-            if (contract == null)
-            {
-                return NotFound();
-            }
+            var contract = await _contractService.GetContractDetailsAsync(id.Value);
 
             return View(contract);
         }
@@ -48,7 +47,7 @@ namespace PROG7311TechMoveLogistics.Controllers
         // GET: Contracts/Create
         public IActionResult Create()
         {
-            ViewData["ClientId"] = new SelectList(_context.Clients, "ClientId", "ClientName");
+            ViewData["ClientId"] = new SelectList(_context.Clients, "ClientId", "ClientId");
             return View();
         }
 
@@ -57,17 +56,31 @@ namespace PROG7311TechMoveLogistics.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ContractId,ContractStartDate,ContractEndDate,ContractStatus,ContractServiceLevel,ClientId")] Contract contract)
+        public async Task<IActionResult> Create(ContractFormViewModel viewmodel)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _context.Add(contract);
-                await _context.SaveChangesAsync();
+                //re-populates the client id dropdown, so user can reselect it 
+                ViewData["ClientId"] = new SelectList(_context.Clients, "ClientId", "ClientId", viewmodel.ClientId);
+
+                return View(viewmodel);
+            }
+
+            try
+            {
+                await _contractService.CreateContractAsync(viewmodel);
+                TempData["NotificationMessage"] = "Contract created successfully. SMS and WhatsApp notifications sent.";
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ClientId"] = new SelectList(_context.Clients, "ClientId", "ClientName", contract.ClientId);
-            return View(contract);
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                ViewData["ClientId"] = new SelectList(_context.Clients, "ClientId", "ClientId", viewmodel.ClientId);
+                return View(viewmodel);
+            }
         }
+
+
 
         // GET: Contracts/Edit/5
         public async Task<IActionResult> Edit(int? id)
@@ -77,12 +90,13 @@ namespace PROG7311TechMoveLogistics.Controllers
                 return NotFound();
             }
 
-            var contract = await _context.Contracts.FindAsync(id);
+            var contract = await _contractService.GetContractByIdAsync(id.Value);
+
             if (contract == null)
             {
                 return NotFound();
             }
-            ViewData["ClientId"] = new SelectList(_context.Clients, "ClientId", "ClientName", contract.ClientId);
+            ViewData["ClientId"] = new SelectList(_context.Clients, "ClientId", "ClientId", contract.ClientId);
             return View(contract);
         }
 
@@ -98,29 +112,37 @@ namespace PROG7311TechMoveLogistics.Controllers
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(contract);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ContractExists(contract.ContractId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                ViewData["ClientId"] = new SelectList(_context.Clients, "ClientId", "ClientId", contract.ClientId);
+                return View(contract);
+            }
+
+            try
+            {
+                await _contractService.UpdateContractAsync(contract);
+                TempData["NotificationMessage"] = $"Contract #{contract.ContractId} successfully updated. SMS and WhatsApp notifications sent.";
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ClientId"] = new SelectList(_context.Clients, "ClientId", "ClientName", contract.ClientId);
-            return View(contract);
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.Contracts.Any(e => e.ContractId == contract.ContractId))
+                {
+                    return NotFound();
+                }
+
+                throw;
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                ViewData["ClientId"] = new SelectList(_context.Clients, "ClientId", "ClientId", contract.ClientId);
+                return View(contract);
+            }
         }
+
+
+
 
         // GET: Contracts/Delete/5
         public async Task<IActionResult> Delete(int? id)
@@ -146,19 +168,10 @@ namespace PROG7311TechMoveLogistics.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var contract = await _context.Contracts.FindAsync(id);
-            if (contract != null)
-            {
-                _context.Contracts.Remove(contract);
-            }
-
-            await _context.SaveChangesAsync();
+            await _contractService.DeleteContractAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
-        private bool ContractExists(int id)
-        {
-            return _context.Contracts.Any(e => e.ContractId == id);
-        }
+
     }
 }

@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PROG7311TechMoveLogistics.Data;
 using PROG7311TechMoveLogistics.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace PROG7311TechMoveLogistics.Controllers
 {
@@ -22,7 +22,9 @@ namespace PROG7311TechMoveLogistics.Controllers
         // GET: Clients
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Clients.ToListAsync());
+            return View(await _context.Clients
+                .Include(c => c.Contracts)    // also return some details from contract model  in the index
+                .ToListAsync());
         }
 
         // GET: Clients/Details/5

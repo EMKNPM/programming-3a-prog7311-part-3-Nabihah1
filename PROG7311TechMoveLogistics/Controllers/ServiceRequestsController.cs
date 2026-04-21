@@ -1,22 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PROG7311TechMoveLogistics.Data;
 using PROG7311TechMoveLogistics.Models;
+using PROG7311TechMoveLogistics.Services;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace PROG7311TechMoveLogistics.Controllers
 {
     public class ServiceRequestsController : Controller
     {
         private readonly DataContext _context;
+        private readonly ICurrencyService _currencyService;
+        private readonly IServiceRequestService _serviceRequestService;
 
-        public ServiceRequestsController(DataContext context)
+        public ServiceRequestsController(DataContext context, ICurrencyService currencyService, IServiceRequestService serviceRequestService)
         {
             _context = context;
+            _currencyService = currencyService;
+            _serviceRequestService = serviceRequestService;
         }
 
         // GET: ServiceRequests
@@ -48,7 +53,7 @@ namespace PROG7311TechMoveLogistics.Controllers
         // GET: ServiceRequests/Create
         public IActionResult Create()
         {
-            ViewData["ContractId"] = new SelectList(_context.Contracts, "ContractId", "ContractServiceLevel");
+            ViewData["ContractId"] = new SelectList(_context.Contracts, "ContractId", "ContractId");
             return View();
         }
 
@@ -57,17 +62,30 @@ namespace PROG7311TechMoveLogistics.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ServiceRequestId,SrDescription,CostForeign,CostZAR,SrStatus,ContractId")] ServiceRequest serviceRequest)
+        public async Task<IActionResult> Create([Bind("ServiceRequestId,SrDescription,CostForeign,SrStatus,ContractId")] ServiceRequest serviceRequest)
         {
-            if (ModelState.IsValid)
+
+            if (!ModelState.IsValid)
             {
-                _context.Add(serviceRequest);
-                await _context.SaveChangesAsync();
+                ViewData["ContractId"] = new SelectList(_context.Contracts, "ContractId", "ContractId");
+                return View(serviceRequest);
+            }
+
+            try
+            {
+                await _serviceRequestService.CreateServiceRequest(serviceRequest);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ContractId"] = new SelectList(_context.Contracts, "ContractId", "ContractServiceLevel", serviceRequest.ContractId);
-            return View(serviceRequest);
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "An error occurred: " + ex.Message;
+                ViewData["ContractId"] = new SelectList(_context.Contracts, "ContractId", "ContractId");
+                return View(serviceRequest);
+            }
+
+
         }
+
 
         // GET: ServiceRequests/Edit/5
         public async Task<IActionResult> Edit(int? id)
@@ -82,7 +100,7 @@ namespace PROG7311TechMoveLogistics.Controllers
             {
                 return NotFound();
             }
-            ViewData["ContractId"] = new SelectList(_context.Contracts, "ContractId", "ContractServiceLevel", serviceRequest.ContractId);
+            ViewData["ContractId"] = new SelectList(_context.Contracts, "ContractId", "ContractId", serviceRequest.ContractId);
             return View(serviceRequest);
         }
 
@@ -91,35 +109,31 @@ namespace PROG7311TechMoveLogistics.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ServiceRequestId,SrDescription,CostForeign,CostZAR,SrStatus,ContractId")] ServiceRequest serviceRequest)
+        public async Task<IActionResult> Edit(int id, [Bind("ServiceRequestId,SrDescription,CostForeign,SrStatus,ContractId")] ServiceRequest serviceRequest)
         {
             if (id != serviceRequest.ServiceRequestId)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(serviceRequest);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ServiceRequestExists(serviceRequest.ServiceRequestId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                ViewData["ContractId"] = new SelectList(_context.Contracts, "ContractId", "ContractId", serviceRequest.ContractId);
+                return View(serviceRequest);
+            }
+
+
+            try
+            {
+                await _serviceRequestService.EditServiceRequest(serviceRequest);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ContractId"] = new SelectList(_context.Contracts, "ContractId", "ContractServiceLevel", serviceRequest.ContractId);
-            return View(serviceRequest);
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                ViewData["ContractId"] = new SelectList(_context.Contracts, "ContractId", "ContractId", serviceRequest.ContractId);
+                return View(serviceRequest);
+            }
         }
 
         // GET: ServiceRequests/Delete/5
@@ -160,5 +174,9 @@ namespace PROG7311TechMoveLogistics.Controllers
         {
             return _context.ServiceRequests.Any(e => e.ServiceRequestId == id);
         }
+
+
+
+
     }
 }
