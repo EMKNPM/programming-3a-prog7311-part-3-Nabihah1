@@ -1,4 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using PROG7311TechMoveLogistics.Observers;
+using PROG7311TechMoveLogistics.States;
+
 
 namespace PROG7311TechMoveLogistics.Models
 {
@@ -37,41 +40,41 @@ namespace PROG7311TechMoveLogistics.Models
 
         //implementing state design pattern 
         //does not need migration because its 'private
-        //private IContractState? _state;  //used for state and observer 
+        private IContractState? _state;  //used for state and observer 
 
 
 
-        ////implementing observer design pattern 
-        //private readonly List<IObserver> _observers = new();
+        //implementing observer design pattern 
+        private readonly List<IObserver> _observers = new();
 
-        //public void Subscribe(IObserver observer)
-        //{
-        //    _observers.Add(observer);
-        //}
+        public void Subscribe(IObserver observer)
+        {
+            _observers.Add(observer);
+        }
 
-        //public void UnSubscribe(IObserver observer)
-        //{
-        //    _observers.Remove(observer);
-        //}
+        public void UnSubscribe(IObserver observer)
+        {
+            _observers.Remove(observer);
+        }
 
-        //public void Notify()
-        //{
-        //    foreach (var observer in _observers)
-        //    {
-        //        observer.Update(this);
-        //    }
+        public void Notify()
+        {
+            foreach (var observer in _observers)
+            {
+                observer.Update(this);
+            }
 
-        //}
+        }
 
 
-        //public void SetState(IContractState state)
-        //{
-        //    _state = state;
-        //    _state.Handle(this);
+        public void SetState(IContractState state)
+        {
+            _state = state;
+            _state.Handle(this);
 
-        //    //anytime the status changes, it automatically triggers a notification
-        //    Notify();
-        //}
+            //anytime the status changes, it automatically triggers a notification
+            Notify();
+        }
 
 
 
