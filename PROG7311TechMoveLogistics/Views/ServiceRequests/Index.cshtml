@@ -4,56 +4,66 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
+<h1 class="mb-3">SERVICE REQUESTS AS PER CONTRACTS</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.SrDescription)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CostForeign)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CostZAR)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.SrStatus)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Contract)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.SrDescription)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CostForeign)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CostZAR)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.SrStatus)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Contract.ContractServiceLevel)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.ServiceRequestId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.ServiceRequestId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.ServiceRequestId">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+
+<a asp-action="Create" class="btn btn-primary mb-3">
+    + Add New Request
+</a>
+
+<hr />
+
+<div class="row">
+    @foreach (var item in Model)
+    {
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm p-3 h-100">
+
+                <!-- Header -->
+                <div class="d-flex justify-content-between">
+                    <h5 class="fw-bold mb-1">
+                        Request #@item.ServiceRequestId
+                    </h5>
+
+                    <span class="badge
+                        @(item.SrStatus == ServiceRequestStatus.Completed ? "bg-success" :
+                                                                          item.SrStatus == ServiceRequestStatus.Pending ? "bg-warning text-dark" :
+                                                                          item.SrStatus == ServiceRequestStatus.Cancelled ? "bg-danger" :
+                                                                          "bg-secondary")">
+                        @item.SrStatus
+                    </span>
+                </div>
+
+                <hr />
+
+                <!-- Description -->
+                <p class="mb-2">
+                    <strong>Description:</strong>
+                    @item.SrDescription
+                </p>
+
+                <!-- Costs -->
+                <p class="mb-1">
+                    <strong>Foreign:</strong> $@item.CostForeign.ToString("F2")
+                </p>
+
+                <p class="mb-2">
+                    <strong>ZAR:</strong> R @item.CostZAR.ToString("F2")
+                </p>
+
+                <!-- Contract -->
+                <p class="mb-2">
+                    <strong>Contract:</strong> #@item.Contract?.ContractId
+                </p>
+
+                <!-- Actions -->
+                <div class="mt-auto">
+                    <a asp-action="Edit" asp-route-id="@item.ServiceRequestId" class="btn btn-sm btn-outline-primary">Edit</a>
+                    <a asp-action="Details" asp-route-id="@item.ServiceRequestId" class="btn btn-sm btn-outline-info">Details</a>
+                    <a asp-action="Delete" asp-route-id="@item.ServiceRequestId" class="btn btn-sm btn-outline-danger">Delete</a>
+                </div>
+
+            </div>
+        </div>
+    }
+</div>

@@ -4,45 +4,58 @@
     ViewData["Title"] = "Details";
 }
 
-<h1>Details</h1>
+<h1 class="row justify-content-center mb-3">SERVICE REQUEST DETAILS</h1>
 
-<div>
-    <h4>ServiceRequest</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.SrDescription)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.SrDescription)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CostForeign)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CostForeign)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CostZAR)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CostZAR)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.SrStatus)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.SrStatus)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Contract)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Contract.ContractServiceLevel)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.ServiceRequestId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm p-4 h-100">
+
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-start">
+                <h4 class="fw-bold mb-1">
+                    Request #@Model.ServiceRequestId
+                </h4>
+
+                <span class="badge
+                    @(Model.SrStatus == ServiceRequestStatus.Completed ? "bg-success" :
+                                                                  Model.SrStatus == ServiceRequestStatus.Pending ? "bg-warning text-dark" :
+                                                                  Model.SrStatus == ServiceRequestStatus.Cancelled ? "bg-danger" :
+                                                                  "bg-secondary")">
+                    @Model.SrStatus
+                </span>
+            </div>
+
+            <hr />
+
+            <!-- Description -->
+            <p class="mb-2">
+                <strong>Description:</strong>@Model.SrDescription
+            </p>
+
+            <!-- Costs -->
+            <p class="mb-2">
+                <strong>Foreign:</strong> $@Model.CostForeign.ToString("F2")
+            </p>
+
+            <p class="mb-2">
+                <strong>ZAR:</strong> R @Model.CostZAR.ToString("F2")
+            </p>
+
+            <!-- Contract -->
+            <p class="mb-3">
+                <strong>Contract:</strong> #@Model.Contract?.ContractId
+            </p>
+
+            <!-- Actions -->
+            <div class="mt-3">
+                <a asp-action="Edit" asp-route-id="@Model.ServiceRequestId" class="btn btn-primary">
+                    Edit
+                </a>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    Back to List
+                </a>
+            </div>
+
+        </div>
+    </div>
 </div>

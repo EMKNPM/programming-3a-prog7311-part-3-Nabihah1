@@ -4,49 +4,74 @@
     ViewData["Title"] = "Create";
 }
 
-<h1>Create</h1>
 
-<h4>ServiceRequest</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="SrDescription" class="control-label"></label>
-                <input asp-for="SrDescription" class="form-control" />
-                <span asp-validation-for="SrDescription" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="CostForeign" class="control-label"></label>
-                <input asp-for="CostForeign" class="form-control" />
-                <span asp-validation-for="CostForeign" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="CostZAR" class="control-label"></label>
-                <input asp-for="CostZAR" class="form-control" />
-                <span asp-validation-for="CostZAR" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="SrStatus" class="control-label"></label>
-                <select asp-for="SrStatus" class="form-control"></select>
-                <span asp-validation-for="SrStatus" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ContractId" class="control-label"></label>
-                <select asp-for="ContractId" class ="form-control" asp-items="ViewBag.ContractId"></select>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+<h2 class="mb-4">Add Service Request</h2>
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+
+        <div class="card shadow-sm p-4">
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger">
+                    @TempData["ErrorMessage"]
+                </div>
+            }
+
+
+            <form asp-action="Create">
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+
+                <div class="form-group">
+                    <label asp-for="SrDescription" class="control-label fw-semibold">Description</label>
+                    <input asp-for="SrDescription" class="form-control" />
+                    <span asp-validation-for="SrDescription" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="CostForeign" class="control-label fw-semibold"> International Currency</label>
+                    <input asp-for="CostForeign" class="form-control" type="number" step="0.01" />
+                    <span asp-validation-for="CostForeign" class="text-danger"></span>
+                </div>
+
+
+                @*      <div class="form-group mt-2">
+                    <label asp-for="CostZAR" class="fw-semibold">Cost in ZAR</label>
+                    <input asp-for="CostZAR" class="form-control" readonly />
+                </div> *@
+
+                @*   <div class="form-group">
+                    <label asp-for="CostZAR" class="control-label fw-semibold">Cost in ZAR</label>
+                    <input asp-for="CostZAR" class="form-control" type="number" step="0.01" readonly />
+                    <span asp-validation-for="CostZAR" class="text-danger"></span>
+                </div> *@
+
+                <div class="form-group">
+                    <label asp-for="SrStatus" class="control-label fw-semibold"> Current Status of Service</label>
+                    <select asp-for="SrStatus" class="form-control" asp-items="Html.GetEnumSelectList<ServiceRequestStatus>()"></select>
+                    <span asp-validation-for="SrStatus" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="ContractId" class="control-label fw-semibold">Contract ID</label>
+                    <select asp-for="ContractId" class="form-control" asp-items="ViewBag.ContractId"></select>
+                </div>
+
+                <!-- Buttons -->
+                <div class="d-flex justify-content-between mt-4">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Save Request</button>
+                </div>
+
+            </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
