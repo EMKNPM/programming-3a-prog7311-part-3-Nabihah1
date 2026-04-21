@@ -1,0 +1,59 @@
+﻿@model IEnumerable<PROG7311TechMoveLogistics.Models.ServiceRequest>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.SrDescription)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CostForeign)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CostZAR)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SrStatus)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Contract)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.SrDescription)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CostForeign)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CostZAR)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SrStatus)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Contract.ContractServiceLevel)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.ServiceRequestId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.ServiceRequestId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.ServiceRequestId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
