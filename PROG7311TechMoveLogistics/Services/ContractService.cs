@@ -84,6 +84,7 @@ namespace PROG7311TechMoveLogistics.Services
             if (viewModel.ContractEndDate <= viewModel.ContractStartDate)
             {
                 throw new Exception("End date must be after start date.");
+               
 
             }
 
