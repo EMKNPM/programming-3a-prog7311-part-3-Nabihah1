@@ -1,81 +1,159 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
-using System.Linq;
-using Microsoft.AspNetCore.Mvc.Testing;
-using TechMoveLogisticsAPI;
 using TechMoveLogisticsAPI.DTOs;
 using TechMoveLogisticsAPI.Models;
 using Xunit;
 
 namespace PROG7311TechMoveLogistics.Test
 {
-    public class IntegrationTest :
-        IClassFixture<CustomWebApplicationFactory<TechMoveLogisticsAPI.Program>>
+    public class IntegrationTest
     {
         private readonly HttpClient _client;
 
-        public IntegrationTest( CustomWebApplicationFactory<TechMoveLogisticsAPI.Program> factory)
+        public IntegrationTest()
         {
-            _client = factory.CreateClient();
+            _client = new HttpClient
+            {
+                BaseAddress = new Uri("http://localhost:7001/")
+            };
         }
 
-        // TEST 1: GET /api/contracts
-        // Verifies endpoint responds successfully
-        [Fact]
-        public async Task GetContracts_Returns200AndData()
+       
+        // 1. BASIC API HEALTH CHECK (200 OK)
+       [Fact]
+        public async Task GetClients_Returns200AndData()
         {
-            // Act
-            var response =  await _client.GetAsync("/api/contracts");
-
-            var content = await response.Content.ReadAsStringAsync();
-
-            Console.WriteLine(content);
+            var response = await _client.GetAsync("api/clients");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            var contracts = await response.Content.ReadFromJsonAsync<List<ContractDto>>();
+            var clients =
+                await response.Content.ReadFromJsonAsync<List<ClientDTO>>();
 
-            Assert.NotNull(contracts);
+            Assert.NotNull(clients);
+            Assert.NotEmpty(clients);
         }
 
-        // TEST 2: CREATE THEN READ
-        // Verifies data integrity
-        [Fact]
-        public async Task CreateContract_ThenRetrieve_ReturnsData()
+      
+        // 2. CREATE → READ → VERIFY (CLIENT)
+       [Fact]
+        public async Task Client_Create_Read_Update_Delete_FullLifecycle()
         {
-            // Arrange
-            var newContract = new CreateContractDto
+            // create 
+            var createDto = new CreateClientDTO
             {
-                ClientId = 1,
-                ContractStartDate = DateTime.UtcNow,
-                ContractEndDate = DateTime.UtcNow.AddDays(10),
-                ContractStatus = ContractStatus.Active,
+                ClientName = $"Lifecycle-{Guid.NewGuid()}",
+                ContactDetails = "life@test.com",
+                Region = "Gauteng"
+            };
+
+            var createResponse =
+                await _client.PostAsJsonAsync("api/clients", createDto);
+
+            Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+
+            var created =
+                await createResponse.Content.ReadFromJsonAsync<Client>();
+
+            Assert.NotNull(created);
+            Assert.True(created!.ClientId > 0);
+
+            // read
+            var getResponse =
+                await _client.GetAsync($"api/clients/{created.ClientId}");
+
+            Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
+
+            var retrieved =
+                await getResponse.Content.ReadFromJsonAsync<ClientDTO>();
+
+            Assert.NotNull(retrieved);
+            Assert.Equal(createDto.ClientName, retrieved!.ClientName);
+            Assert.Equal(createDto.ContactDetails, retrieved.ContactDetails);
+            Assert.Equal(createDto.Region, retrieved.Region);
+
+            // update 
+            var updateDto = new UpdateClientDto
+            {
+                ClientId = created.ClientId,
+                ClientName = createDto.ClientName + "_Updated",
+                ContactDetails = "updated@test.com",
+                Region = "Western Cape"
+            };
+
+            var updateResponse =
+                await _client.PutAsJsonAsync($"api/clients/{created.ClientId}", updateDto);
+
+            Assert.Equal(HttpStatusCode.NoContent, updateResponse.StatusCode);
+
+            var updatedCheck =
+                await _client.GetAsync($"api/clients/{created.ClientId}");
+
+            var updated =
+                await updatedCheck.Content.ReadFromJsonAsync<ClientDTO>();
+
+            Assert.Equal("Western Cape", updated!.Region);
+
+            // delete
+            var deleteResponse =
+                await _client.DeleteAsync($"api/clients/{created.ClientId}");
+
+            Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
+
+            var afterDelete =
+                await _client.GetAsync($"api/clients/{created.ClientId}");
+
+            Assert.Equal(HttpStatusCode.NotFound, afterDelete.StatusCode);
+        }
+
+       
+        // 3. CREATE CONTRACT → VERIFY RELATIONSHIP     
+        [Fact]
+        public async Task Contract_Create_VerifiesClientRelationship()
+        {
+            var clients =
+                await _client.GetFromJsonAsync<List<ClientDTO>>("api/clients");
+
+            Assert.NotNull(clients);
+            Assert.NotEmpty(clients);
+
+            var clientId = clients!.First().ClientId;
+
+            var contractDto = new CreateContractDto
+            {
+                ClientId = clientId,
+                ContractStartDate = DateTime.Today,
+                ContractEndDate = DateTime.Today.AddMonths(1),
+                ContractStatus = ContractStatusDto.Active,
                 ContractServiceLevel = "Premium"
             };
 
-            // Act - Create           
             var createResponse =
-                await _client.PostAsJsonAsync("/api/contracts", newContract);
+                await _client.PostAsJsonAsync("api/contracts", contractDto);
 
-            // Show the actual API response
-            var error =
-                await createResponse.Content.ReadAsStringAsync();
+            Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
 
-            Console.WriteLine(error);
-
-            Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode); ;
-
-            // Act - Retrieve
-            var getResponse = await _client.GetAsync("/api/contracts");
-
-            // Assert GET
-            Assert.Equal(HttpStatusCode.OK,getResponse.StatusCode);
-
-            var contracts = await getResponse.Content.ReadFromJsonAsync<List<ContractDto>>();
+            var contracts =
+                await _client.GetFromJsonAsync<List<ContractDto>>("api/contracts");
 
             Assert.NotNull(contracts);
 
-            Assert.Contains(contracts!, c => c.ContractServiceLevel == "Premium");
+            var createdContract = contracts!
+                .FirstOrDefault(c =>
+                    c.ClientId == clientId &&
+                    c.ContractServiceLevel == "Premium");
+
+            Assert.NotNull(createdContract);
+        }
+
+      
+        // 4. NEGATIVE TEST (BONUS MARKS)
+       [Fact]
+        public async Task GetInvalidClient_Returns404()
+        {
+            var response = await _client.GetAsync("api/clients/999999");
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
     }
 }
