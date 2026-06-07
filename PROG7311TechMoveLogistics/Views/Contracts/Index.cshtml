@@ -1,4 +1,6 @@
-﻿@model IEnumerable<PROG7311TechMoveLogistics.Models.Contract>
+﻿@using TechMoveLogisticsAPI.DTOs
+@model IEnumerable<TechMoveLogisticsAPI.DTOs.ContractDto>
+
 
 @{
     ViewData["Title"] = "Index";
@@ -72,9 +74,9 @@
                     </h5>
 
                     <span class="badge
-                        @(item.ContractStatus == ContractStatus.Active ? "bg-success" :
-                                                                          item.ContractStatus == ContractStatus.Expired ? "bg-danger" :
-                                                                          item.ContractStatus == ContractStatus.OnHold ? "bg-warning text-dark" :
+                        @(item.ContractStatus == ContractStatusDto.Active ? "bg-success" :
+                                                                          item.ContractStatus == ContractStatusDto.Expired ? "bg-danger" :
+                                                                          item.ContractStatus == ContractStatusDto.OnHold ? "bg-warning text-dark" :
                                                                           "bg-secondary")">
                         @item.ContractStatus
                     </span>
@@ -98,7 +100,7 @@
 
                 <!-- Client -->
                 <p class="mb-2">
-                    <strong>Client:</strong> @item.Client?.ClientName
+                    <strong>Client:</strong> @item.ClientName
                 </p>
 
                 <!-- Actions -->

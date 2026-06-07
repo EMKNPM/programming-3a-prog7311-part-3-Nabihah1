@@ -1,4 +1,8 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="docker-compose.yml" />
+  </Folder>
   <Project Path="PROG7311TechMoveLogistics.Test/PROG7311TechMoveLogistics.Test.csproj" />
   <Project Path="PROG7311TechMoveLogistics/PROG7311TechMoveLogistics.csproj" />
+  <Project Path="TechMoveLogisticsAPI/TechMoveLogisticsAPI.csproj" Id="e845e536-ebb2-4928-948d-f18f14ac657f" />
 </Solution>

@@ -7,24 +7,42 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using PROG7311TechMoveLogistics.APIServices;
 
 namespace PROG7311TechMoveLogistics.Controllers
 {
     public class ClientsController : Controller
     {
-        private readonly DataContext _context;
+        //PART 3: wants us to NOT use DataContext, so imma comment all the code out 
+        // we suppoed to use APIs 
 
-        public ClientsController(DataContext context)
+        //private readonly DataContext _context;
+
+        //public ClientsController(DataContext context)
+        //{
+        //    _context = context;
+        //}
+
+        private readonly IClientAPIService _clientApiService;
+
+        public ClientsController(IClientAPIService clientApiService)
         {
-            _context = context;
+            _clientApiService = clientApiService;
         }
+
 
         // GET: Clients
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Clients
-                .Include(c => c.Contracts)    // also return some details from contract model  in the index
-                .ToListAsync());
+            try
+            {
+                var clients = await _clientApiService.GetAllClientsAsync();
+                return View(clients);
+            }
+            catch (Exception ex)
+            {
+                return Content($"API error: {ex.Message}");
+            }
         }
 
         // GET: Clients/Details/5
@@ -35,8 +53,8 @@ namespace PROG7311TechMoveLogistics.Controllers
                 return NotFound();
             }
 
-            var client = await _context.Clients
-                .FirstOrDefaultAsync(m => m.ClientId == id);
+            var client = await _clientApiService.GetClientByIdAsync(id.Value);
+
             if (client == null)
             {
                 return NotFound();
@@ -60,8 +78,8 @@ namespace PROG7311TechMoveLogistics.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(client);
-                await _context.SaveChangesAsync();
+                await _clientApiService.CreateClientAsync(client);
+
                 return RedirectToAction(nameof(Index));
             }
             return View(client);
@@ -75,7 +93,8 @@ namespace PROG7311TechMoveLogistics.Controllers
                 return NotFound();
             }
 
-            var client = await _context.Clients.FindAsync(id);
+            var client = await _clientApiService.GetClientByIdAsync(id.Value);
+
             if (client == null)
             {
                 return NotFound();
@@ -99,19 +118,12 @@ namespace PROG7311TechMoveLogistics.Controllers
             {
                 try
                 {
-                    _context.Update(client);
-                    await _context.SaveChangesAsync();
+                    await _clientApiService.UpdateClientAsync(client);
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (Exception ex)
                 {
-                    if (!ClientExists(client.ClientId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    TempData["ErrorMessage"] = ex.Message;
+                    return View(client);
                 }
                 return RedirectToAction(nameof(Index));
             }
@@ -126,8 +138,8 @@ namespace PROG7311TechMoveLogistics.Controllers
                 return NotFound();
             }
 
-            var client = await _context.Clients
-                .FirstOrDefaultAsync(m => m.ClientId == id);
+            var client = await _clientApiService.GetClientByIdAsync(id.Value);
+           
             if (client == null)
             {
                 return NotFound();
@@ -141,19 +153,15 @@ namespace PROG7311TechMoveLogistics.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var client = await _context.Clients.FindAsync(id);
-            if (client != null)
-            {
-                _context.Clients.Remove(client);
-            }
-
-            await _context.SaveChangesAsync();
+            await _clientApiService.DeleteClientAsync(id);
+           
             return RedirectToAction(nameof(Index));
         }
 
-        private bool ClientExists(int id)
-        {
-            return _context.Clients.Any(e => e.ClientId == id);
-        }
+        //private bool ClientExists(int id)
+        //{
+        //    return _context.Clients.Any(e => e.ClientId == id);
+        //}
+
     }
 }

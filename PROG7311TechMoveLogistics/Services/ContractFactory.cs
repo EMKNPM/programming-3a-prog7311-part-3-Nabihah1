@@ -1,22 +1,28 @@
-﻿using PROG7311TechMoveLogistics.Models; 
+﻿using PROG7311TechMoveLogistics.Models;
+using TechMoveLogisticsAPI.DTOs;
 
 namespace PROG7311TechMoveLogistics.Services
 {
     public class ContractFactory
     {
-        // created class to folloe factory design pattern rules 
-        // linked to the contarct controller (post create)
-        public static Contract Create(ContractFormViewModel model)
+        public static CreateContractDto Create(ContractFormViewModel model)
         {
-            //factory creates new objects 
-            return new Contract
+            return new CreateContractDto
             {
                 ClientId = model.ClientId,
-                ContractStartDate = model.ContractStartDate,
-                ContractEndDate = model.ContractEndDate,
-                ContractStatus = model.ContractStatus,
-                ContractServiceLevel = model.ContractServiceLevel
+                ContractStartDate = model.ContractStartDate ?? DateTime.Now,
+                ContractEndDate = model.ContractEndDate ?? DateTime.Now,
 
+                ContractStatus = model.ContractStatus switch
+                {
+                    ContractStatus.Draft => ContractStatusDto.Draft,
+                    ContractStatus.Active => ContractStatusDto.Active,
+                    ContractStatus.Expired => ContractStatusDto.Expired,
+                    ContractStatus.OnHold => ContractStatusDto.OnHold,
+                    _ => ContractStatusDto.Draft
+                },
+
+                ContractServiceLevel = model.ContractServiceLevel
             };
         }
     }

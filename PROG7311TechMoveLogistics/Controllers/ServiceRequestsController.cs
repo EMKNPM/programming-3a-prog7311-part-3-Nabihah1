@@ -8,27 +8,31 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using PROG7311TechMoveLogistics.APIServices;
 
 namespace PROG7311TechMoveLogistics.Controllers
 {
     public class ServiceRequestsController : Controller
     {
-        private readonly DataContext _context;
+        //private readonly DataContext _context;
         private readonly ICurrencyService _currencyService;
-        private readonly IServiceRequestService _serviceRequestService;
+        private readonly IServiceRequestApiService _serviceRequestApiService;
+        private readonly IContractApiService _contractApiService;
 
-        public ServiceRequestsController(DataContext context, ICurrencyService currencyService, IServiceRequestService serviceRequestService)
+
+        public ServiceRequestsController(IContractApiService contractApiService, ICurrencyService currencyService, IServiceRequestApiService serviceRequestApiService)
         {
-            _context = context;
+            _contractApiService = contractApiService;
             _currencyService = currencyService;
-            _serviceRequestService = serviceRequestService;
+            _serviceRequestApiService = serviceRequestApiService;
         }
 
         // GET: ServiceRequests
         public async Task<IActionResult> Index()
         {
-            var dataContext = _context.ServiceRequests.Include(s => s.Contract);
-            return View(await dataContext.ToListAsync());
+            var requests =  await _serviceRequestApiService.GetAllAsync();
+
+            return View(requests);
         }
 
         // GET: ServiceRequests/Details/5
@@ -39,9 +43,8 @@ namespace PROG7311TechMoveLogistics.Controllers
                 return NotFound();
             }
 
-            var serviceRequest = await _context.ServiceRequests
-                .Include(s => s.Contract)
-                .FirstOrDefaultAsync(m => m.ServiceRequestId == id);
+            var serviceRequest =   await _serviceRequestApiService.GetByIdAsync(id.Value);
+
             if (serviceRequest == null)
             {
                 return NotFound();
@@ -51,9 +54,12 @@ namespace PROG7311TechMoveLogistics.Controllers
         }
 
         // GET: ServiceRequests/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["ContractId"] = new SelectList(_context.Contracts, "ContractId", "ContractId");
+            var contracts =  await _contractApiService.GetAllContractsAsync();
+
+            ViewData["ContractId"] = new SelectList( contracts, "ContractId","ContractId");
+
             return View();
         }
 
@@ -67,19 +73,24 @@ namespace PROG7311TechMoveLogistics.Controllers
 
             if (!ModelState.IsValid)
             {
-                ViewData["ContractId"] = new SelectList(_context.Contracts, "ContractId", "ContractId");
+                var contracts = await _contractApiService.GetAllContractsAsync();
+
+                ViewData["ContractId"] = new SelectList(  contracts, "ContractId", "ContractId");
                 return View(serviceRequest);
             }
 
             try
             {
-                await _serviceRequestService.CreateServiceRequest(serviceRequest);
+                await _serviceRequestApiService.CreateAsync(serviceRequest);
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = "An error occurred: " + ex.Message;
-                ViewData["ContractId"] = new SelectList(_context.Contracts, "ContractId", "ContractId");
+
+                var contracts =  await _contractApiService.GetAllContractsAsync();
+
+                ViewData["ContractId"] = new SelectList( contracts, "ContractId",  "ContractId");
                 return View(serviceRequest);
             }
 
@@ -95,12 +106,16 @@ namespace PROG7311TechMoveLogistics.Controllers
                 return NotFound();
             }
 
-            var serviceRequest = await _context.ServiceRequests.FindAsync(id);
+            var serviceRequest =  await _serviceRequestApiService.GetByIdAsync(id.Value);
+
             if (serviceRequest == null)
             {
                 return NotFound();
             }
-            ViewData["ContractId"] = new SelectList(_context.Contracts, "ContractId", "ContractId", serviceRequest.ContractId);
+            var contracts =await _contractApiService.GetAllContractsAsync();
+
+            ViewData["ContractId"] =  new SelectList(  contracts,  "ContractId",  "ContractId",  serviceRequest.ContractId);
+
             return View(serviceRequest);
         }
 
@@ -118,20 +133,35 @@ namespace PROG7311TechMoveLogistics.Controllers
 
             if (!ModelState.IsValid)
             {
-                ViewData["ContractId"] = new SelectList(_context.Contracts, "ContractId", "ContractId", serviceRequest.ContractId);
+                var contracts =
+     await _contractApiService.GetAllContractsAsync();
+
+                ViewData["ContractId"] =
+                    new SelectList(
+                        contracts,
+                        "ContractId",
+                        "ContractId",
+                        serviceRequest.ContractId);
                 return View(serviceRequest);
             }
 
 
             try
             {
-                await _serviceRequestService.EditServiceRequest(serviceRequest);
+                await _serviceRequestApiService.UpdateAsync(serviceRequest);
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-                ViewData["ContractId"] = new SelectList(_context.Contracts, "ContractId", "ContractId", serviceRequest.ContractId);
+                var contracts =  await _contractApiService.GetAllContractsAsync();
+
+                ViewData["ContractId"] =
+                    new SelectList(
+                        contracts,
+                        "ContractId",
+                        "ContractId",
+                        serviceRequest.ContractId);
                 return View(serviceRequest);
             }
         }
@@ -144,9 +174,8 @@ namespace PROG7311TechMoveLogistics.Controllers
                 return NotFound();
             }
 
-            var serviceRequest = await _context.ServiceRequests
-                .Include(s => s.Contract)
-                .FirstOrDefaultAsync(m => m.ServiceRequestId == id);
+            var serviceRequest =  await _serviceRequestApiService.GetByIdAsync(id.Value);
+
             if (serviceRequest == null)
             {
                 return NotFound();
@@ -160,20 +189,15 @@ namespace PROG7311TechMoveLogistics.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var serviceRequest = await _context.ServiceRequests.FindAsync(id);
-            if (serviceRequest != null)
-            {
-                _context.ServiceRequests.Remove(serviceRequest);
-            }
+            await _serviceRequestApiService.DeleteAsync(id);
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool ServiceRequestExists(int id)
-        {
-            return _context.ServiceRequests.Any(e => e.ServiceRequestId == id);
-        }
+        //private bool ServiceRequestExists(int id)
+        //{
+        //    return _context.ServiceRequests.Any(e => e.ServiceRequestId == id);
+        //}
 
 
 

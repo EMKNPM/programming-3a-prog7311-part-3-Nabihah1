@@ -43,7 +43,6 @@ namespace PROG7311TechMoveLogistics.Models
         private IContractState? _state;  //used for state and observer 
 
 
-
         //implementing observer design pattern 
         private readonly List<IObserver> _observers = new();
 
@@ -66,12 +65,10 @@ namespace PROG7311TechMoveLogistics.Models
 
         }
 
-
         public void SetState(IContractState state)
         {
             _state = state;
             _state.Handle(this);
-
             //anytime the status changes, it automatically triggers a notification
             Notify();
         }

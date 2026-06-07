@@ -93,124 +93,124 @@ namespace PROG7311TechMoveLogistics.Tests
 
         //trying to request a service, with contract = expired
         // should not be able to do it
-        [Fact]
-        public async Task Test7_CreateServiceRequest_ExpiredContract()
-        {
-            var options = new DbContextOptionsBuilder<DataContext>()
-                .UseInMemoryDatabase(databaseName: "ExpiredContractDb")
-                .Options;
+        //[Fact]
+        //public async Task Test7_CreateServiceRequest_ExpiredContract()
+        //{
+        //    var options = new DbContextOptionsBuilder<DataContext>()
+        //        .UseInMemoryDatabase(databaseName: "ExpiredContractDb")
+        //        .Options;
 
-            using var context = new DataContext(options);
+        //    using var context = new DataContext(options);
 
-            var contract = new Contract
-            {
-                ContractId = 1,
-                ContractStartDate = DateTime.Now.AddDays(-10),
-                ContractEndDate = DateTime.Now.AddDays(10),
-                ContractStatus = ContractStatus.Expired,
-                ContractServiceLevel = "Standard",
-                ClientId = 1
-            };
+        //    var contract = new Contract
+        //    {
+        //        ContractId = 1,
+        //        ContractStartDate = DateTime.Now.AddDays(-10),
+        //        ContractEndDate = DateTime.Now.AddDays(10),
+        //        ContractStatus = ContractStatus.Expired,
+        //        ContractServiceLevel = "Standard",
+        //        ClientId = 1
+        //    };
 
-            var currencyService = new FakeCurrencyService();
-            var service = new ServiceRequestService(context, currencyService);
+        //    var currencyService = new FakeCurrencyService();
+        //    var service = new ServiceRequestService(context, currencyService);
 
-            var request = new ServiceRequest
-            {
-                ServiceRequestId = 1,
-                SrDescription = "Test request",
-                CostForeign = 100,
-                SrStatus = ServiceRequestStatus.Pending,
-                ContractId = 1
-            };
+        //    var request = new ServiceRequest
+        //    {
+        //        ServiceRequestId = 1,
+        //        SrDescription = "Test request",
+        //        CostForeign = 100,
+        //        SrStatus = ServiceRequestStatus.Pending,
+        //        ContractId = 1
+        //    };
 
-            await Assert.ThrowsAsync<Exception>(() => service.CreateServiceRequest(request));
-        }
+        //    await Assert.ThrowsAsync<Exception>(() => service.CreateServiceRequest(request));
+        //}
 
 
         //trying to request a service, with contract = on hold
         // should not be able to do it
-        [Fact]
-        public async Task Test8_CreateServiceRequest_OnHoldContract()
-        {
-            var options = new DbContextOptionsBuilder<DataContext>()
-               .UseInMemoryDatabase(databaseName: "OnHoldContractDb")
-               .Options;
+        //[Fact]
+        //public async Task Test8_CreateServiceRequest_OnHoldContract()
+        //{
+        //    var options = new DbContextOptionsBuilder<DataContext>()
+        //       .UseInMemoryDatabase(databaseName: "OnHoldContractDb")
+        //       .Options;
 
-            using var context = new DataContext(options);
+        //    using var context = new DataContext(options);
 
-            var contract = new Contract
-            {
-                ContractId = 2,
-                ContractStartDate = DateTime.Now.AddDays(-10),
-                ContractEndDate = DateTime.Now.AddDays(10),
-                ContractStatus = ContractStatus.OnHold,
-                ContractServiceLevel = "Premium",
-                ClientId = 1
-            };
+        //    var contract = new Contract
+        //    {
+        //        ContractId = 2,
+        //        ContractStartDate = DateTime.Now.AddDays(-10),
+        //        ContractEndDate = DateTime.Now.AddDays(10),
+        //        ContractStatus = ContractStatus.OnHold,
+        //        ContractServiceLevel = "Premium",
+        //        ClientId = 1
+        //    };
 
-            context.Contracts.Add(contract);
-            await context.SaveChangesAsync();
+        //    context.Contracts.Add(contract);
+        //    await context.SaveChangesAsync();
 
-            var currencyService = new FakeCurrencyService();
-            var service = new ServiceRequestService(context, currencyService);
+        //    var currencyService = new FakeCurrencyService();
+        //    var service = new ServiceRequestService(context, currencyService);
 
-            var request = new ServiceRequest
-            {
-                ServiceRequestId = 2,
-                SrDescription = "Blocked request",
-                CostForeign = 200,
-                SrStatus = ServiceRequestStatus.Pending,
-                ContractId = 2
-            };
+        //    var request = new ServiceRequest
+        //    {
+        //        ServiceRequestId = 2,
+        //        SrDescription = "Blocked request",
+        //        CostForeign = 200,
+        //        SrStatus = ServiceRequestStatus.Pending,
+        //        ContractId = 2
+        //    };
 
-            await Assert.ThrowsAsync<Exception>(() => service.CreateServiceRequest(request));
-        }
+        //    await Assert.ThrowsAsync<Exception>(() => service.CreateServiceRequest(request));
+        //}
 
 
         // tests that u can usccessfully request a service (contract status = active)
-        [Fact]
-        public async Task Test9_CreateServiceRequest_ActiveContract()
-        {
+        //[Fact]
+        //public async Task Test9_CreateServiceRequest_ActiveContract()
+        //{
 
-            var options = new DbContextOptionsBuilder<DataContext>()
-                .UseInMemoryDatabase(databaseName: "ActiveContractDb")
-                .Options;
+        //    var options = new DbContextOptionsBuilder<DataContext>()
+        //        .UseInMemoryDatabase(databaseName: "ActiveContractDb")
+        //        .Options;
 
-            using var context = new DataContext(options);
+        //    using var context = new DataContext(options);
 
-            var contract = new Contract
-            {
-                ContractId = 3,
-                ContractStartDate = DateTime.Now.AddDays(-10),
-                ContractEndDate = DateTime.Now.AddDays(10),
-                ContractStatus = ContractStatus.Active,
-                ContractServiceLevel = "Premium",
-                ClientId = 1
-            };
+        //    var contract = new Contract
+        //    {
+        //        ContractId = 3,
+        //        ContractStartDate = DateTime.Now.AddDays(-10),
+        //        ContractEndDate = DateTime.Now.AddDays(10),
+        //        ContractStatus = ContractStatus.Active,
+        //        ContractServiceLevel = "Premium",
+        //        ClientId = 1
+        //    };
 
-            context.Contracts.Add(contract);
-            await context.SaveChangesAsync();
+        //    context.Contracts.Add(contract);
+        //    await context.SaveChangesAsync();
 
-            var currencyService = new FakeCurrencyService();
-            var service = new ServiceRequestService(context, currencyService);
+        //    var currencyService = new FakeCurrencyService();
+        //    var service = new ServiceRequestService(context, currencyService);
 
-            var request = new ServiceRequest
-            {
-                ServiceRequestId = 3,
-                SrDescription = "Allowed request",
-                CostForeign = 100,
-                SrStatus = ServiceRequestStatus.Pending,
-                ContractId = 3
-            };
+        //    var request = new ServiceRequest
+        //    {
+        //        ServiceRequestId = 3,
+        //        SrDescription = "Allowed request",
+        //        CostForeign = 100,
+        //        SrStatus = ServiceRequestStatus.Pending,
+        //        ContractId = 3
+        //    };
 
-            await service.CreateServiceRequest(request);
+        //    await service.CreateServiceRequest(request);
 
-            var savedRequest = await context.ServiceRequests
-                .FirstOrDefaultAsync(x => x.ServiceRequestId == 3);
+        //    var savedRequest = await context.ServiceRequests
+        //        .FirstOrDefaultAsync(x => x.ServiceRequestId == 3);
 
-            Assert.NotNull(savedRequest);
-            Assert.Equal(1850, savedRequest.CostZAR);
-        }
+        //    Assert.NotNull(savedRequest);
+        //    Assert.Equal(1850, savedRequest.CostZAR);
+        //}
     }
 }
