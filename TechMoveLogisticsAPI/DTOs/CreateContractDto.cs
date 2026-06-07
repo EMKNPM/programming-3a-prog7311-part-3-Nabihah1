@@ -15,7 +15,7 @@ namespace TechMoveLogisticsAPI.DTOs
 
         public string ContractServiceLevel { get; set; } = string.Empty;
 
-        //public IFormFile? SignedDocument { get; set; }
+        public IFormFile? SignedDocument { get; set; }
 
     }
 }

@@ -22,7 +22,8 @@ namespace PROG7311TechMoveLogistics.Services
                     _ => ContractStatusDto.Draft
                 },
 
-                ContractServiceLevel = model.ContractServiceLevel
+                ContractServiceLevel = model.ContractServiceLevel,
+                 SignedDocument = model.SignedDocument
             };
         }
     }

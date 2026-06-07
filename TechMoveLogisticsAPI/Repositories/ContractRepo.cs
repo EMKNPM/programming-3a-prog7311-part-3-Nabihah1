@@ -16,7 +16,10 @@ namespace TechMoveLogisticsAPI.Repositories
 
         public async Task<List<Contract>> GetAllAsync(string? status, DateTime? startDate,DateTime? endDate)
         {
-            var contracts = _context.Contracts.Include(c => c.Client).AsQueryable();
+            var contracts = _context.Contracts
+     .Include(c => c.Client)
+     .Include(c => c.Documents)
+     .AsQueryable();
 
             if (!string.IsNullOrEmpty(status))
             {
@@ -47,7 +50,7 @@ namespace TechMoveLogisticsAPI.Repositories
 
         public async Task AddAsync(Contract contract)
         {
-            _context.Contracts.Add(contract);
+            await _context.Contracts.AddAsync(contract);
             await _context.SaveChangesAsync();
         }
 

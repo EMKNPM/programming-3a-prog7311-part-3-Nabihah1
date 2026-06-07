@@ -84,7 +84,9 @@ namespace PROG7311TechMoveLogistics.Controllers
             }
 
             //map to DTO
+            Console.WriteLine($"MVC ClientId = {viewmodel.ClientId}");
             var dto = ContractFactory.Create(viewmodel);
+            Console.WriteLine($"DTO ClientId = {dto.ClientId}");
 
             // send to API
             var result = await _contractApiService.CreateContractAsync(dto);

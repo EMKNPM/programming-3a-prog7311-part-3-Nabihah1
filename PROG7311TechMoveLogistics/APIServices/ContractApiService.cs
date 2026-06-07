@@ -49,7 +49,40 @@ namespace PROG7311TechMoveLogistics.APIServices
 
         public async Task<string?> CreateContractAsync(CreateContractDto contract)
         {
-            var response = await _httpClient.PostAsJsonAsync("api/contracts", contract);
+            var form = new MultipartFormDataContent();
+
+            form.Add(
+                new StringContent(contract.ClientId.ToString()),
+                nameof(contract.ClientId));
+
+            form.Add(
+                new StringContent(contract.ContractStartDate.ToString("yyyy-MM-dd")),
+                nameof(contract.ContractStartDate));
+
+            form.Add(
+                new StringContent(contract.ContractEndDate.ToString("yyyy-MM-dd")),
+                nameof(contract.ContractEndDate));
+
+            form.Add(
+                new StringContent(((int)contract.ContractStatus).ToString()),
+                nameof(contract.ContractStatus));
+
+            form.Add(
+                new StringContent(contract.ContractServiceLevel),
+                nameof(contract.ContractServiceLevel));
+
+            if (contract.SignedDocument != null)
+            {
+                var streamContent =
+                    new StreamContent(contract.SignedDocument.OpenReadStream());
+
+                form.Add(
+                    streamContent,
+                    nameof(contract.SignedDocument),
+                    contract.SignedDocument.FileName);
+            }
+
+            var response = await _httpClient.PostAsync("api/contracts", form);
 
             var content = await response.Content.ReadAsStringAsync();
 
@@ -57,11 +90,9 @@ namespace PROG7311TechMoveLogistics.APIServices
             Console.WriteLine("BODY: " + content);
 
             if (!response.IsSuccessStatusCode)
-            {
-                return content; // error message from API
-            }
+                return content;
 
-            return null; // success
+            return null;
         }
 
         public async Task UpdateContractAsync(ContractDto contract)

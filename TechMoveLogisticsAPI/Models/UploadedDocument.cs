@@ -17,6 +17,8 @@ namespace TechMoveLogisticsAPI.Models
         public DateTime UploadedDate { get; set; }
         public bool IsEncrypted { get; set; } = true;
 
+        public string FileUrl { get; set; } = string.Empty;
+
         //FOREIGN KEY 
         public int ContractId { get; set; }
 

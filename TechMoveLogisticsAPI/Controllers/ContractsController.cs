@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Reflection.Metadata;
 using TechMoveLogisticsAPI.DTOs;
-using TechMoveLogisticsAPI.Services;
+using TechMoveLogisticsAPI.Factories;
 using TechMoveLogisticsAPI.Models;
+using TechMoveLogisticsAPI.Services;
 
 namespace TechMoveLogisticsAPI.Controllers
 {
@@ -29,8 +31,19 @@ namespace TechMoveLogisticsAPI.Controllers
                 ContractStatus = (ContractStatusDto)c.ContractStatus,
                 ContractServiceLevel = c.ContractServiceLevel,
                 ClientId = c.ClientId,
-                ClientName = c.Client?.ClientName ?? ""
-            });
+                ClientName = c.Client?.ClientName ?? "",
+
+                 Documents = c.Documents.Select(d => new DocumentDto
+                 {
+                     Id = d.Id,
+                     FileName = d.FileName,
+                     FilePath = d.FilePath,
+                     FileUrl = "/uploads/" + System.IO.Path.GetFileName(d.FilePath),
+                     FileSize = d.FileSize,
+                     UploadedDate = d.UploadedDate,
+                     IsEncrypted = d.IsEncrypted
+                 }).ToList()
+           });
 
             return Ok(result);
         }
@@ -53,33 +66,43 @@ namespace TechMoveLogisticsAPI.Controllers
                 ContractStatus = (ContractStatusDto)contract.ContractStatus,
                 ContractServiceLevel = contract.ContractServiceLevel,
                 ClientId = contract.ClientId,
-                ClientName = contract.Client?.ClientName ?? ""
+                ClientName = contract.Client?.ClientName ?? "",
+
+                Documents = contract.Documents.Select(d => new DocumentDto
+                {
+                    Id = d.Id,
+                    FileName = d.FileName,
+                    FilePath = d.FilePath,
+                    FileUrl = "/uploads/" + System.IO.Path.GetFileName(d.FilePath),
+                    FileSize = d.FileSize,
+                    UploadedDate = d.UploadedDate,
+                    IsEncrypted = d.IsEncrypted
+                }).ToList()
             };
 
             return Ok(dto);
         }
 
         [HttpPost]
-        public async Task<ActionResult> CreateContract(CreateContractDto dto)
+        public async Task<ActionResult> CreateContract([FromForm] CreateContractDto dto)
         {
             Console.WriteLine($"START: {dto.ContractStartDate}");
             Console.WriteLine($"END: {dto.ContractEndDate}");
 
-            //if (dto.ContractEndDate.Date >= dto.ContractStartDate.Date)
-            //{
-            //    return BadRequest("End date must be after start date.");
-            //}
-
-
-            //if (string.IsNullOrWhiteSpace(dto.ContractServiceLevel))
-            //{
-            //    return BadRequest("Service level is required.");
-            //}
+            Console.WriteLine("POST HIT");
+            Console.WriteLine($"API RECEIVED ClientId = {dto.ClientId}");
+            Console.WriteLine($"API RECEIVED Service = {dto.ContractServiceLevel}");
 
             var id = await _service.CreateContractAsync(dto);
-
-            return CreatedAtAction(nameof(GetContract), new { id }, dto);
+            // handle file AFTER contract is created OR inside service properly
+            Console.WriteLine("CREATED ID: " + id);
+            return Ok(id);
         }
+
+
+
+
+
 
         [HttpPut("{id}")]
         public async Task<ActionResult<ContractDto>> UpdateContract(int id, UpdateContractDto dto)
@@ -89,10 +112,7 @@ namespace TechMoveLogisticsAPI.Controllers
                 return BadRequest("ID mismatch.");
             }
 
-            // if (dto.ContractEndDate.Date >= dto.ContractStartDate.Date)
-            //{
-            //    return BadRequest("End date must be after start date.");
-            //}
+           
 
             var contract = new Contract
             {

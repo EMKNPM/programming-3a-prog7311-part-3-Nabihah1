@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//builder.WebHost.UseWebRoot("wwwroot");
+
 // Add services to the container.
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -59,8 +61,10 @@ app.MapGet("/", () => Results.Redirect("/swagger"));
 
 // Configure the HTTP request pipeline.
 
-   
+
 //app.UseHttpsRedirection();
+//builder.Services.AddDirectoryBrowser();
+app.UseStaticFiles();
 
 app.UseAuthorization();
 
