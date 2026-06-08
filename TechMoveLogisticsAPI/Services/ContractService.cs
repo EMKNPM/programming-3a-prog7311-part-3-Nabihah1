@@ -14,14 +14,17 @@ namespace TechMoveLogisticsAPI.Services
         //constructor 
         private readonly IContractRepo _repository;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IConfiguration _configuration;
 
 
         public ContractService(
-            IContractRepo repository,
-            IWebHostEnvironment webHostEnvironment)
+     IContractRepo repository,
+     IWebHostEnvironment webHostEnvironment,
+     IConfiguration configuration)
         {
             _repository = repository;
             _webHostEnvironment = webHostEnvironment;
+            _configuration = configuration;
         }
 
 
@@ -48,6 +51,7 @@ namespace TechMoveLogisticsAPI.Services
             return await _repository.GetByIdAsync(id);
         }
 
+
         //public async Task<int> CreateContractAsync(CreateContractDto dto)
         //{
         //    var contract = ContractFactory.Create(dto);
@@ -58,52 +62,64 @@ namespace TechMoveLogisticsAPI.Services
         //    var state = ResolveState(dto.ContractStatus);
         //    contract.SetState(state);
 
+        //    if (dto.SignedDocument != null)
+        //    {
+        //        var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads");
+
+        //        if (!Directory.Exists(uploadsFolder))
+        //        {
+        //            Directory.CreateDirectory(uploadsFolder);
+        //        }
+
+        //        var fileName = Guid.NewGuid() + Path.GetExtension(dto.SignedDocument.FileName);
+        //        var filePath = Path.Combine(uploadsFolder, fileName);
+
+        //        using (var stream = new FileStream(filePath, FileMode.Create))
+        //        {
+        //            await dto.SignedDocument.CopyToAsync(stream);
+        //        }
+
+        //        contract.Documents.Add(new UploadedDocument
+        //        {
+        //            FileName = dto.SignedDocument.FileName,
+        //           FilePath = fileName,
+        //            FileSize = dto.SignedDocument.Length,
+        //            UploadedDate = DateTime.Now,
+        //            IsEncrypted = false,
+        //            FileUrl = _configuration["ApiSettings:BaseUrl"] + "/uploads/" + fileName
+        //        });
+        //    }
+
+
         //    await _repository.AddAsync(contract);
 
         //    return contract.ContractId;
         //}
 
+
+        //works
+
         public async Task<int> CreateContractAsync(CreateContractDto dto)
         {
-            var contract = ContractFactory.Create(dto);
-
-            contract.Subscribe(new SmsNotifier());
-            contract.Subscribe(new WhatsAppNotifier());
-
-            var state = ResolveState(dto.ContractStatus);
-            contract.SetState(state);
-
-            //if (dto.SignedDocument != null)
-            //{
-            //    var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads");
-
-            //    if (!Directory.Exists(uploadsFolder))
-            //        Directory.CreateDirectory(uploadsFolder);
-
-            //    var fileName = Guid.NewGuid() + Path.GetExtension(dto.SignedDocument.FileName);
-            //    var filePath = Path.Combine(uploadsFolder, fileName);
-
-            //    using (var stream = new FileStream(filePath, FileMode.Create))
-            //    {
-            //        await dto.SignedDocument.CopyToAsync(stream);
-            //    }
-
-            //    contract.Documents.Add(new UploadedDocument
-            //    {
-            //        FileName = dto.SignedDocument.FileName,
-            //        FilePath = filePath,
-            //        FileSize = dto.SignedDocument.Length,
-            //        UploadedDate = DateTime.Now,
-            //        IsEncrypted = false,
-            //        Contract = contract
-            //    });
-            //}
-
+            var contract = new Contract
+            {
+                ContractStartDate = dto.ContractStartDate,
+                ContractEndDate = dto.ContractEndDate,
+                ContractStatus = (ContractStatus)dto.ContractStatus,
+                ContractServiceLevel = dto.ContractServiceLevel,
+                ClientId = dto.ClientId,
+                Documents = new List<UploadedDocument>()
+            };
 
             await _repository.AddAsync(contract);
 
             return contract.ContractId;
         }
+
+
+
+
+
 
         public async Task UpdateContractAsync(Contract updatedContract)
         {

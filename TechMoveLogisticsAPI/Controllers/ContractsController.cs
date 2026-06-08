@@ -12,16 +12,20 @@ namespace TechMoveLogisticsAPI.Controllers
     public class ContractsController : ControllerBase
     {
         private readonly IContractService _service;
+        private readonly IConfiguration _configuration;
 
-        public ContractsController(IContractService service)
+        public ContractsController(IContractService service,IConfiguration configuration)
         {
             _service = service;
+            _configuration = configuration;
         }
 
         [HttpGet]
         public async Task<ActionResult<List<ContractDto>>> GetContracts(string? status, DateTime? startDate,  DateTime? endDate)
         {
             var contracts = await _service.GetAllContractsAsync(status,  startDate,  endDate);
+
+            var baseUrl = _configuration["ApiSettings:BaseUrl"];
 
             var result = contracts.Select(c => new ContractDto
             {
@@ -38,7 +42,7 @@ namespace TechMoveLogisticsAPI.Controllers
                      Id = d.Id,
                      FileName = d.FileName,
                      FilePath = d.FilePath,
-                     FileUrl = "/uploads/" + System.IO.Path.GetFileName(d.FilePath),
+                     FileUrl = $"{baseUrl}/uploads/{System.IO.Path.GetFileName(d.FilePath)}",
                      FileSize = d.FileSize,
                      UploadedDate = d.UploadedDate,
                      IsEncrypted = d.IsEncrypted
@@ -52,6 +56,8 @@ namespace TechMoveLogisticsAPI.Controllers
         public async Task<ActionResult<ContractDto>> GetContract(int id)
         {
             var contract = await _service.GetContractByIdAsync(id);
+
+            var baseUrl = _configuration["ApiSettings:BaseUrl"];
 
             if (contract == null)
             {
@@ -73,7 +79,7 @@ namespace TechMoveLogisticsAPI.Controllers
                     Id = d.Id,
                     FileName = d.FileName,
                     FilePath = d.FilePath,
-                    FileUrl = "/uploads/" + System.IO.Path.GetFileName(d.FilePath),
+                    FileUrl = $"{baseUrl}/uploads/{System.IO.Path.GetFileName(d.FilePath)}",
                     FileSize = d.FileSize,
                     UploadedDate = d.UploadedDate,
                     IsEncrypted = d.IsEncrypted
@@ -86,21 +92,28 @@ namespace TechMoveLogisticsAPI.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateContract([FromForm] CreateContractDto dto)
         {
-            Console.WriteLine($"START: {dto.ContractStartDate}");
-            Console.WriteLine($"END: {dto.ContractEndDate}");
+            try
+            {
+                Console.WriteLine("POST HIT");
 
-            Console.WriteLine("POST HIT");
-            Console.WriteLine($"API RECEIVED ClientId = {dto.ClientId}");
-            Console.WriteLine($"API RECEIVED Service = {dto.ContractServiceLevel}");
+                var id = await _service.CreateContractAsync(dto);
 
-            var id = await _service.CreateContractAsync(dto);
-            // handle file AFTER contract is created OR inside service properly
-            Console.WriteLine("CREATED ID: " + id);
-            return Ok(id);
+                Console.WriteLine("CREATED ID: " + id);
+
+                return Ok(new
+                {
+                    contractId = id,
+                    message = "Contract created successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("CREATE FAILED: " + ex.Message);
+                Console.WriteLine(ex.StackTrace);
+
+                return StatusCode(500, ex.Message);
+            }
         }
-
-
-
 
 
 

@@ -21,9 +21,15 @@ namespace TechMoveLogisticsAPI.Repositories
      .Include(c => c.Documents)
      .AsQueryable();
 
-            if (!string.IsNullOrEmpty(status))
+            //if (!string.IsNullOrEmpty(status))
+            //{
+            //    var parsedStatus = Enum.Parse<ContractStatus>(status);
+            //    contracts = contracts.Where(c => c.ContractStatus == parsedStatus);
+            //}
+
+            if (!string.IsNullOrEmpty(status) &&
+    Enum.TryParse<ContractStatus>(status, true, out var parsedStatus))
             {
-                var parsedStatus = Enum.Parse<ContractStatus>(status);
                 contracts = contracts.Where(c => c.ContractStatus == parsedStatus);
             }
 
@@ -50,8 +56,15 @@ namespace TechMoveLogisticsAPI.Repositories
 
         public async Task AddAsync(Contract contract)
         {
+            Console.WriteLine("ADDING CONTRACT TO DB");
+
             await _context.Contracts.AddAsync(contract);
+
+            Console.WriteLine("SAVECHANGES START");
+
             await _context.SaveChangesAsync();
+
+            Console.WriteLine("SAVECHANGES COMPLETE");
         }
 
         public async Task UpdateAsync(Contract contract)

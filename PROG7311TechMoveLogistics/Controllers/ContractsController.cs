@@ -54,6 +54,59 @@ namespace PROG7311TechMoveLogistics.Controllers
         }
 
         // POST: Contracts/Create
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> Create(ContractFormViewModel viewmodel)
+        //{
+        //    var clients = await _clientApiService.GetAllClientsAsync();
+
+        //    ViewData["ClientId"] =
+        //        new SelectList(clients, "ClientId", "ClientName", viewmodel.ClientId);
+
+        //    // manual validation 
+        //    if (!viewmodel.ContractStartDate.HasValue)
+        //        ModelState.AddModelError("ContractStartDate", "Start date is required.");
+
+        //    if (!viewmodel.ContractEndDate.HasValue)
+        //        ModelState.AddModelError("ContractEndDate", "End date is required.");
+
+        //    if (viewmodel.ContractStartDate.HasValue &&
+        //        viewmodel.ContractEndDate.HasValue &&
+        //        viewmodel.ContractEndDate <= viewmodel.ContractStartDate)
+        //    {
+        //        ModelState.AddModelError("ContractEndDate", "End date must be after start date.");
+        //    }
+
+        //    // stop here if invalid
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return View(viewmodel);
+        //    }
+
+        //    //map to DTO
+        //    Console.WriteLine($"MVC ClientId = {viewmodel.ClientId}");
+        //    var dto = ContractFactory.Create(viewmodel);
+        //    Console.WriteLine($"DTO ClientId = {dto.ClientId}");
+
+        //    // send to API
+        //    var result = await _contractApiService.CreateContractAsync(dto);
+
+        //    // API error handling
+        //    if (!string.IsNullOrEmpty(result) &&
+        //        (result.Contains("error", StringComparison.OrdinalIgnoreCase)
+        //         || result.Contains("required")
+        //         || result.Contains("End date")
+        //         || result.Contains("Service")))
+        //    {
+        //        ModelState.AddModelError("", result);
+        //        return View(viewmodel);
+        //    }
+
+        //    TempData["NotificationMessage"] = "Contract created successfully.";
+        //    return RedirectToAction(nameof(Index));
+        //}
+
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ContractFormViewModel viewmodel)
@@ -63,7 +116,7 @@ namespace PROG7311TechMoveLogistics.Controllers
             ViewData["ClientId"] =
                 new SelectList(clients, "ClientId", "ClientName", viewmodel.ClientId);
 
-            // manual validation 
+            // manual validation
             if (!viewmodel.ContractStartDate.HasValue)
                 ModelState.AddModelError("ContractStartDate", "Start date is required.");
 
@@ -77,21 +130,29 @@ namespace PROG7311TechMoveLogistics.Controllers
                 ModelState.AddModelError("ContractEndDate", "End date must be after start date.");
             }
 
-            // stop here if invalid
             if (!ModelState.IsValid)
             {
                 return View(viewmodel);
             }
 
-            //map to DTO
-            Console.WriteLine($"MVC ClientId = {viewmodel.ClientId}");
-            var dto = ContractFactory.Create(viewmodel);
-            Console.WriteLine($"DTO ClientId = {dto.ClientId}");
+            // : manually build DTO INCLUDING FILE
+            var dto = new CreateContractDto
+            {
+                ClientId = viewmodel.ClientId,
+                ContractStartDate = viewmodel.ContractStartDate.Value,
+                ContractEndDate = viewmodel.ContractEndDate.Value,
+                ContractStatus = (ContractStatusDto)viewmodel.ContractStatus,
+                ContractServiceLevel = viewmodel.ContractServiceLevel,
+                SignedDocument = viewmodel.SignedDocument
+            };
 
-            // send to API
+            Console.WriteLine($"MVC ClientId = {dto.ClientId}");
+            Console.WriteLine($"MVC File = {(dto.SignedDocument != null ? dto.SignedDocument.FileName : "NULL")}");
+
+            // send to API 
             var result = await _contractApiService.CreateContractAsync(dto);
 
-            // API error handling
+            // error handling
             if (!string.IsNullOrEmpty(result) &&
                 (result.Contains("error", StringComparison.OrdinalIgnoreCase)
                  || result.Contains("required")
@@ -105,6 +166,7 @@ namespace PROG7311TechMoveLogistics.Controllers
             TempData["NotificationMessage"] = "Contract created successfully.";
             return RedirectToAction(nameof(Index));
         }
+
 
         // GET: Contracts/Edit/5
         public async Task<IActionResult> Edit(int? id)
