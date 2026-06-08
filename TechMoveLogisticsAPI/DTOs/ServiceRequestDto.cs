@@ -17,5 +17,6 @@ namespace TechMoveLogisticsAPI.DTOs
 
         public int ContractId { get; set; }
 
+        public ContractSummaryDto? Contract { get; set; }
     }
 }

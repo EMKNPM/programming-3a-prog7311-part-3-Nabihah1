@@ -33,7 +33,16 @@ namespace TechMoveLogisticsAPI.Controllers
                 CostForeign = r.CostForeign,
                 CostZAR = r.CostZAR,
                 SrStatus = r.SrStatus,
-                ContractId = r.ContractId
+                ContractId = r.ContractId,
+
+                Contract = r.Contract == null ? null : new ContractSummaryDto
+                {
+                    ContractId = r.Contract.ContractId,
+                    ContractStartDate = r.Contract.ContractStartDate,
+                    ContractEndDate = r.Contract.ContractEndDate,
+                    ContractStatus = r.Contract.ContractStatus,
+                    ContractServiceLevel = r.Contract.ContractServiceLevel
+                }
             });
 
             return Ok(result);

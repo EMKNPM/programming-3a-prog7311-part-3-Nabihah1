@@ -26,7 +26,16 @@ namespace TechMoveLogisticsAPI.Controllers
                 ClientId = c.ClientId,
                 ClientName = c.ClientName,
                 ContactDetails = c.ContactDetails,
-                Region = c.Region
+                Region = c.Region,
+
+                Contracts = c.Contracts.Select(ct => new ContractSummaryDto
+                {
+                    ContractId = ct.ContractId,
+                    ContractStartDate = ct.ContractStartDate,
+                    ContractEndDate = ct.ContractEndDate,
+                    ContractStatus = ct.ContractStatus,
+                    ContractServiceLevel = ct.ContractServiceLevel
+                }).ToList()
             });
 
             return Ok(result);
